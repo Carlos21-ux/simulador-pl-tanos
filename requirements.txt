@@ -3,5 +3,6 @@ pandas
 plotly
 fpdf
 Pillow
-tensorflow
+tensorflow-cpu
+
 
