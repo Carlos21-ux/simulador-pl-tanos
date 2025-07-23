@@ -18,9 +18,9 @@ st.title("🌿 Simulador de Plátanos")
 # Menú lateral
 with st.sidebar:
     st.header("Opciones Generales")
-    opcion = st.radio("Selecciona un modo de simulación", ["🔢 Manual", "🎲 Montecarlo", "🌱 Vigor de la Planta"])
+    opcion = st.radio("Selecciona un modo de simulación", ["manual", "montecarlo", "vigor"])
     st.markdown("---")
-    if opcion == "🎲 Montecarlo":
+    if opcion == "montecarlo":
         st.header("🎯 Personalizar Simulación")
         pb_range = st.slider("Rango de PB (cm)", 30, 50, (30, 50))
         pm_range = st.slider("Rango de PM (cm)", 25, 45, (25, 45))
@@ -76,4 +76,3 @@ def generar_pdf_diagnostico(df):
     pdf_bytes = buffer.getvalue()
     buffer.close()
     return pdf_bytes
-
