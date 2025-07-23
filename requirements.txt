@@ -4,6 +4,4 @@ plotly
 fpdf
 Pillow
 tensorflow
-numpy
-Pillow
-tensorflow
+
