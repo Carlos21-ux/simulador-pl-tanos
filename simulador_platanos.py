@@ -1,54 +1,18 @@
-
 import streamlit as st
 import random
 import pandas as pd
 import plotly.express as px
-from PIL import Image, ImageOps
+from PIL import Image
 from io import BytesIO
 from fpdf import FPDF
 import base64
-import numpy as np
-import tensorflow.keras
-import requests
-import tempfile
+# import tensorflow.keras  # Comentado temporalmente por errores de entorno
 
 # Imagen
 image = Image.open("platano1.png")
 st.image(image, use_container_width=False, width=300)
 
 st.title("🌿 Simulador de Plátanos")
-
-# Subida de imagen y análisis con IA
-st.markdown("### 📸 Sube una imagen de tu planta para análisis con IA")
-uploaded_image = st.file_uploader("Selecciona una imagen...", type=["jpg", "png", "jpeg"])
-if uploaded_image is not None:
-    st.image(uploaded_image, caption="Vista previa de la planta", use_column_width=True)
-
-    if st.button("🔍 Analizar Salud con IA"):
-        try:
-            def analizar_imagen_teachable(image_file):
-                model_url = "https://teachablemachine.withgoogle.com/models/uE3gB7Ntn/"
-                model_path = tensorflow.keras.utils.get_file("plant_model.h5", model_url + "model.h5", cache_subdir="models")
-                labels_path = requests.get(model_url + "labels.txt").text.splitlines()
-                model = tensorflow.keras.models.load_model(model_path)
-
-                img = Image.open(image_file).convert("RGB").resize((224, 224))
-                img = ImageOps.fit(img, (224, 224), Image.Resampling.LANCZOS)
-                img_array = np.asarray(img) / 255.0
-                input_array = np.expand_dims(img_array, axis=0)
-
-                prediction = model.predict(input_array)[0]
-                index = np.argmax(prediction)
-                label = labels_path[index]
-                confianza = round(prediction[index] * 100, 2)
-
-                return label, confianza
-
-            label, confianza = analizar_imagen_teachable(uploaded_image)
-            emoji = "🌿" if "saludable" in label.lower() else ("🍂" if "enferma" in label.lower() else "🐛")
-            st.success(f"{emoji} Resultado: {label} ({confianza}%)")
-        except Exception as e:
-            st.error(f"❌ Error al analizar la imagen: {e}")
 
 with st.sidebar:
     st.header("Opciones Generales")
@@ -179,3 +143,4 @@ elif opcion == "🌱 Vigor de la Planta":
             st.plotly_chart(fig)
 
             st.warning("⚠️ Esta sección está en desarrollo. Pronto podrás exportar múltiples plantas y resultados en PDF.")
+
