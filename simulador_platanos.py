@@ -7,11 +7,10 @@ from PIL import Image
 from io import BytesIO
 from fpdf import FPDF
 import base64
-import unicodedata
 
-# Imagen
+# Cargar imagen
 image = Image.open("platano1.png")
-st.image(image, use_column_width=False, width=300)
+st.image(image, width=300, use_container_width=False)
 
 st.title("🌿 Simulador de Plátanos")
 
@@ -20,59 +19,50 @@ with st.sidebar:
     st.header("Opciones Generales")
     opcion = st.radio("Selecciona un modo de simulación", ["manual", "montecarlo", "vigor"])
     st.markdown("---")
-    if opcion == "montecarlo":
-        st.header("🎯 Personalizar Simulación")
-        pb_range = st.slider("Rango de PB (cm)", 30, 50, (30, 50))
-        pm_range = st.slider("Rango de PM (cm)", 25, 45, (25, 45))
-        pa_range = st.slider("Rango de PA (cm)", 15, 35, (15, 35))
-        altura_range = st.slider("Rango de Altura (m)", 2.0, 4.0, (2.0, 4.0))
 
 def calcular(pb, pm, pa, altura):
     resultado = (pb * 0.25 + pm * 0.2 + pa * 0.15 + altura * 10) - 10
     return round(min(max(resultado, 30), 60))
 
-def limpiar_texto(texto):
-    return unicodedata.normalize("NFKD", texto).encode("latin-1", "ignore").decode("latin-1")
+if opcion == "manual":
+    st.subheader("🔢 Simulación Manual")
+    pb = st.number_input("📏 Perímetro de la base (cm):", min_value=30.0, max_value=50.0, value=40.0)
+    pm = st.number_input("📏 Perímetro medio (cm):", min_value=25.0, max_value=45.0, value=35.0)
+    pa = st.number_input("📏 Perímetro alto (cm):", min_value=15.0, max_value=35.0, value=25.0)
+    altura = st.number_input("📏 Altura total del tronco (m):", min_value=2.0, max_value=4.0, value=3.0)
 
-def generar_pdf(df):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Reporte de Simulacion de Platanos", ln=1, align='C')
+    if st.button("🌱 Calcular Plátanos"):
+        pred = calcular(pb, pm, pa, altura)
+        st.success(f"🌿 Estimación: {pred} plátanos 🍌")
 
-    col_names = df.columns.tolist()
-    for col in col_names:
-        pdf.cell(30, 10, limpiar_texto(col), border=1)
-    pdf.ln()
+elif opcion == "montecarlo":
+    st.subheader("🎲 Simulación por Montecarlo")
+    n = st.number_input("🌱 Número de plantas a simular:", min_value=1, value=10)
+    precio = st.number_input("💰 Precio por plátano (S/):", min_value=0.0, value=0.2)
 
-    for _, row in df.iterrows():
-        for item in row:
-            pdf.cell(30, 10, limpiar_texto(str(item)), border=1)
-        pdf.ln()
+    if st.button("▶️ Ejecutar Simulación"):
+        data = []
+        total_platanos = 0
 
-    buffer = BytesIO()
-    pdf.output(buffer)
-    pdf_bytes = buffer.getvalue()
-    buffer.close()
-    return pdf_bytes
+        for _ in range(n):
+            pb = round(random.uniform(30, 50), 2)
+            pm = round(random.uniform(25, 45), 2)
+            pa = round(random.uniform(15, 35), 2)
+            altura = round(random.uniform(2.0, 4.0), 2)
+            estimado = calcular(pb, pm, pa, altura)
+            total_platanos += estimado
+            data.append([pb, pm, pa, altura, estimado])
 
-def generar_pdf_diagnostico(df):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Diagnostico de Vigor de Plantas", ln=1, align='C')
-    pdf.ln(10)
+        df = pd.DataFrame(data, columns=["PB (cm)", "PM (cm)", "PA (cm)", "Altura (m)", "🍌 Estimación"])
+        st.dataframe(df)
 
-    for idx, row in df.iterrows():
-        pdf.set_font("Arial", 'B', 12)
-        pdf.cell(0, 10, limpiar_texto(f"Planta {idx+1} - Estado: {row['Estado']}"), ln=1)
-        pdf.set_font("Arial", '', 11)
-        texto = f"Grosor: {row['Grosor']} cm\nAltura Tallo: {row['Altura Tallo']} m\nHojas Sanas: {row['Hojas']}\nAltura Hijo: {row['Altura Hijo']} m\nRecomendaciones: {row['Diagnóstico']}"
-        pdf.multi_cell(0, 10, limpiar_texto(texto))
-        pdf.ln(5)
+        ganancia = round(total_platanos * precio, 2)
+        st.success(f"🔢 Total de plátanos estimados: {total_platanos}")
+        st.info(f"💰 Ganancia estimada: S/ {ganancia}")
 
-    buffer = BytesIO()
-    pdf.output(buffer)
-    pdf_bytes = buffer.getvalue()
-    buffer.close()
-    return pdf_bytes
+elif opcion == "vigor":
+    st.subheader("🌱 Evaluación del Vigor de la Planta")
+    st.info("Aquí podrás ingresar las características de cada planta y analizar su vigor y salud.")
+
+    # Este bloque debería ser completado con lógica para ingresar múltiples plantas y analizarlas
+    st.warning("🛠️ Esta sección está en desarrollo. Pronto podrás agregar múltiples plantas y exportar resultados en PDF.")
