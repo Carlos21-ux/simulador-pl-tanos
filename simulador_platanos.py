@@ -14,29 +14,28 @@ st.image(image, use_container_width=False, width=300)
 
 st.title("🌿 Simulador de Plátanos")
 
-# Menú lateral
 with st.sidebar:
     st.header("Opciones Generales")
-    opcion = st.radio("Selecciona un modo de simulación", ["manual", "montecarlo", "vigor"])
+    opcion = st.radio("Selecciona un modo de simulación", ["🔢 Manual", "🎲 Montecarlo", "🌱 Vigor de la Planta"])
     st.markdown("---")
 
 def calcular(pb, pm, pa, altura):
     resultado = (pb * 0.25 + pm * 0.2 + pa * 0.15 + altura * 10) - 10
     return round(min(max(resultado, 30), 60))
 
-# Sección Manual
-if opcion == "manual":
-    pb = st.number_input("📏 Perímetro de la base (cm):", min_value=30.0, max_value=50.0, value=40.0)
-    pm = st.number_input("📏 Perímetro medio (cm):", min_value=25.0, max_value=45.0, value=35.0)
-    pa = st.number_input("📏 Perímetro alto (cm):", min_value=15.0, max_value=35.0, value=25.0)
-    altura = st.number_input("📏 Altura total del tronco (m):", min_value=2.0, max_value=4.0, value=3.0)
+# ---------- MANUAL ----------
+if opcion == "🔢 Manual":
+    pb = st.number_input("📏 Perímetro de la base (cm):", min_value=30.0, max_value=100.0, value=40.0)
+    pm = st.number_input("📏 Perímetro medio (cm):", min_value=25.0, max_value=100.0, value=35.0)
+    pa = st.number_input("📏 Perímetro alto (cm):", min_value=15.0, max_value=100.0, value=25.0)
+    altura = st.number_input("📏 Altura total del tronco (m):", min_value=2.0, max_value=6.0, value=3.0)
 
     if st.button("🌱 Calcular Plátanos"):
         pred = calcular(pb, pm, pa, altura)
         st.success(f"🌿 Estimación: {pred} plátanos 🍌")
 
-# Sección Montecarlo
-elif opcion == "montecarlo":
+# ---------- MONTECARLO ----------
+elif opcion == "🎲 Montecarlo":
     st.subheader("🎲 Simulación por Montecarlo")
     n = st.number_input("🌱 Número de plantas a simular:", min_value=1, value=10)
     precio = st.number_input("💰 Precio por plátano (S/):", min_value=0.0, value=0.2)
@@ -46,10 +45,10 @@ elif opcion == "montecarlo":
         total_platanos = 0
 
         for _ in range(n):
-            pb = round(random.uniform(30, 50), 2)
-            pm = round(random.uniform(25, 45), 2)
-            pa = round(random.uniform(15, 35), 2)
-            altura = round(random.uniform(2.0, 4.0), 2)
+            pb = round(random.uniform(30, 100), 2)
+            pm = round(random.uniform(25, 100), 2)
+            pa = round(random.uniform(15, 100), 2)
+            altura = round(random.uniform(2.0, 6.0), 2)
             estimado = calcular(pb, pm, pa, altura)
             total_platanos += estimado
             data.append([pb, pm, pa, altura, estimado])
@@ -61,20 +60,19 @@ elif opcion == "montecarlo":
         st.success(f"🔢 Total de plátanos estimados: {total_platanos}")
         st.info(f"💰 Ganancia estimada: S/ {ganancia}")
 
-# Sección Vigor de la Planta
-elif opcion == "vigor":
-    st.header("🌱 Evaluación del Vigor de la Planta")
+# ---------- VIGOR DE LA PLANTA ----------
+elif opcion == "🌱 Vigor de la Planta":
+    st.subheader("🌱 Evaluación del Vigor de la Planta")
     st.info("Aquí podrás ingresar las características de cada planta y analizar su vigor y salud.")
 
-    if 'plantas' not in st.session_state:
-        st.session_state['plantas'] = []
+    if "plantas" not in st.session_state:
+        st.session_state["plantas"] = []
 
-    with st.form("form_planta"):
-        st.subheader("🪴 Ingreso de Datos de la Planta")
-        grosor = st.slider("🌾 Grosor del tallo (cm)", min_value=1, max_value=100, value=30)
-        altura_tallo = st.slider("📏 Altura del tallo (m)", min_value=0.5, max_value=4.0, value=2.0, step=0.1)
+    with st.form("vigor_form"):
+        grosor = st.number_input("🌱 Grosor del tallo (cm)", min_value=1.0, max_value=100.0, value=30.0)
+        altura_tallo = st.number_input("🌿 Altura del tallo (m)", min_value=0.5, max_value=6.0, value=2.5)
         hojas_sanas = st.number_input("🍃 Número de hojas sanas", min_value=0, max_value=30, value=10)
-        altura_hijo = st.slider("🌿 Altura del hijo (m)", min_value=0.0, max_value=3.0, value=1.0, step=0.1)
+        altura_hijo = st.number_input("🌿 Altura del hijo (m)", min_value=0.0, max_value=4.0, value=1.5)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -82,51 +80,67 @@ elif opcion == "vigor":
         with col2:
             cancelar = st.form_submit_button("❌ Cancelar")
 
-    if cancelar:
-        st.session_state['plantas'] = []
-        st.warning("Formulario reiniciado.")
+        if agregar:
+            st.session_state["plantas"].append({
+                "Grosor": grosor,
+                "AlturaTallo": altura_tallo,
+                "HojasSanas": hojas_sanas,
+                "AlturaHijo": altura_hijo
+            })
+            st.success("🌱 Planta agregada")
 
-    if agregar:
-        st.session_state['plantas'].append({
-            "Grosor": grosor,
-            "AlturaTallo": altura_tallo,
-            "Hojas": hojas_sanas,
-            "AlturaHijo": altura_hijo
-        })
-        st.success("🌿 Planta registrada exitosamente")
+        if cancelar:
+            st.session_state["plantas"] = []
+            st.warning("🚫 Lista de plantas reiniciada")
 
-    if st.session_state['plantas']:
-        st.subheader("📋 Plantas registradas")
-        df_diag = pd.DataFrame(st.session_state['plantas'])
-        st.dataframe(df_diag)
-
+    if st.session_state["plantas"]:
         if st.button("📊 Analizar Plantas"):
             resultados = []
-            clasificaciones = []
-            for i, planta in enumerate(st.session_state['plantas']):
-                score = planta['Grosor'] * 0.3 + planta['AlturaTallo'] * 15 + planta['Hojas'] * 1.5 + planta['AlturaHijo'] * 10
-                if score >= 100:
-                    estado = "🌟 Excelente"
-                    color = "green"
-                elif score >= 75:
-                    estado = "💪 Buena"
-                    color = "blue"
-                elif score >= 50:
-                    estado = "⚠️ Regular"
-                    color = "orange"
+            estados = {"Saludable": 0, "Regular": 0, "Débil": 0, "Crítica": 0}
+
+            for idx, planta in enumerate(st.session_state["plantas"], 1):
+                vigor = (
+                    planta["Grosor"] * 0.3 +
+                    planta["AlturaTallo"] * 10 +
+                    planta["HojasSanas"] * 1 +
+                    planta["AlturaHijo"] * 5
+                )
+                if vigor > 100:
+                    estado = "Saludable"
+                    color = "#28a745"
+                    emoji = "🟢"
+                elif vigor > 75:
+                    estado = "Regular"
+                    color = "#ffc107"
+                    emoji = "🟡"
+                elif vigor > 50:
+                    estado = "Débil"
+                    color = "#fd7e14"
+                    emoji = "🟠"
                 else:
-                    estado = "❌ Débil"
-                    color = "red"
-                resultados.append((f"Planta #{i+1}", estado, color))
-                clasificaciones.append(estado)
+                    estado = "Crítica"
+                    color = "#dc3545"
+                    emoji = "🔴"
 
-            st.subheader("🧾 Diagnóstico por Planta")
-            for nombre, estado, color in resultados:
-                st.markdown(f"<div style='background-color:{color}; padding:10px; border-radius:10px; color:white'>
-                            <strong>{nombre}</strong>: {estado}</div>", unsafe_allow_html=True)
+                estados[estado] += 1
+                texto = (
+                    f"{emoji} Planta {idx}:\n"
+                    f"- Grosor: {planta['Grosor']} cm\n"
+                    f"- Altura Tallo: {planta['AlturaTallo']} m\n"
+                    f"- Hojas Sanas: {planta['HojasSanas']}\n"
+                    f"- Altura Hijo: {planta['AlturaHijo']} m\n"
+                    f"➡️ Estado: **{estado}**"
+                )
 
-            fig = px.pie(names=clasificaciones, title="Distribución de estados de vigor")
+                st.markdown(f"<div style='background-color:{color}; padding:10px; border-radius:10px; color:white'>{texto}</div>", unsafe_allow_html=True)
+
+            # Gráfica circular
+            fig = px.pie(
+                names=list(estados.keys()),
+                values=list(estados.values()),
+                title="Distribución del Vigor de las Plantas",
+                color_discrete_sequence=px.colors.sequential.RdBu
+            )
             st.plotly_chart(fig)
 
-            # PDF export (puede añadirse más adelante)
-            st.info("📝 Exportación a PDF estará disponible en la próxima actualización.")
+            st.warning("⚠️ Esta sección está en desarrollo. Pronto podrás exportar múltiples plantas y resultados en PDF.")
