@@ -23,15 +23,14 @@ def calcular(pb, pm, pa, altura):
     resultado = (pb * 0.25 + pm * 0.2 + pa * 0.15 + altura * 10) - 10
     return round(min(max(resultado, 30), 60))
 
-# Exportar DataFrame a Excel descargable con openpyxl (corregido)
-def exportar_excel(df, filename="reporte.xlsx"):
+# Exportar DataFrame a CSV descargable sin dependencias externas
+def exportar_csv(df, filename="reporte.csv"):
     output = BytesIO()
     try:
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Resultados')
+        df.to_csv(output, index=False)
         output.seek(0)
         b64 = base64.b64encode(output.read()).decode()
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="{filename}">📥 Descargar Excel</a>'
+        href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">📥 Descargar CSV</a>'
         st.markdown(href, unsafe_allow_html=True)
     except Exception as e:
         st.error(f"❌ Error al exportar el archivo: {e}")
@@ -64,7 +63,7 @@ if opcion == "🔢 Manual":
         total_ganancia = df_manual["💰 Ganancia"].sum()
         st.success(f"🔢 Total plátanos: {total_platanos}")
         st.info(f"💰 Ganancia estimada: S/ {total_ganancia}")
-        exportar_excel(df_manual, filename="manual_resultado.xlsx")
+        exportar_csv(df_manual, filename="manual_resultado.csv")
 
 # Activar secciones faltantes
 elif opcion == "🎲 Montecarlo":
@@ -93,7 +92,7 @@ elif opcion == "🎲 Montecarlo":
         st.info(f"💰 Ganancia estimada: S/ {ganancia}")
 
         df["💰 Ganancia"] = df["🍌 Estimación"] * precio
-        exportar_excel(df, filename="montecarlo_resultado.xlsx")
+        exportar_csv(df, filename="montecarlo_resultado.csv")
 
 elif opcion == "🌱 Vigor de la Planta":
     st.subheader("🌱 Evaluación del Vigor de la Planta")
@@ -159,7 +158,8 @@ elif opcion == "🌱 Vigor de la Planta":
                 color_discrete_sequence=px.colors.sequential.RdBu
             )
             st.plotly_chart(fig)
-            exportar_excel(df_vigor, filename="vigor_resultado.xlsx")
+            exportar_csv(df_vigor, filename="vigor_resultado.csv")
+
 
 
 
