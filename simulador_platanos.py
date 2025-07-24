@@ -25,7 +25,6 @@ def calcular(pb, pm, pa, altura):
     return round(min(max(resultado, 30), 60))
 
 # Exportar DataFrame a CSV descargable corregido (UTF-8 BOM + separador ;) para Excel
-
 def exportar_csv(df, prefix="reporte"):
     output = BytesIO()
     try:
@@ -168,22 +167,21 @@ elif opcion == "🌱 Vigor de la Planta":
             df_vigor = pd.DataFrame(resultados, columns=["#", "Grosor", "Altura Tallo", "Hojas Sanas", "Altura Hijo", "Estado"])
             st.dataframe(df_vigor)
 
-            ]# Definir colores personalizados para cada estado
-colores_personalizados = {
-    "Saludable": "green",
-    "Regular": "orange",
-    "Débil": "red",
-    "Crítica": "darkred"
-}
+            # ✅ CAMBIO: aplicar colores personalizados
+            colores_personalizados = {
+                "Saludable": "green",
+                "Regular": "orange",
+                "Débil": "red",
+                "Crítica": "darkred"
+            }
 
-fig = px.pie(
-    names=list(estados.keys()),
-    values=list(estados.values()),
-    title="Distribución del Vigor de las Plantas",
-    color=list(estados.keys()),
-    color_discrete_map=colores_personalizados
-)
-
+            fig = px.pie(
+                names=list(estados.keys()),
+                values=list(estados.values()),
+                title="Distribución del Vigor de las Plantas",
+                color=list(estados.keys()),
+                color_discrete_map=colores_personalizados
+            )
             st.plotly_chart(fig)
             exportar_csv(df_vigor, prefix="vigor_resultado")
 
@@ -191,5 +189,6 @@ fig = px.pie(
             st.markdown("### 📋 Resumen de diagnóstico")
             for estado, cantidad in estados.items():
                 st.markdown(f"**{estado}:** {cantidad} plantas")
+
 
 
