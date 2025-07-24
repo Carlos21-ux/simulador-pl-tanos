@@ -1,4 +1,5 @@
 # Se mantuvieron los imports originales y se agregaron los necesarios
+# Se mantuvieron los imports originales y se agregaron los necesarios
 import streamlit as st
 import random
 import pandas as pd
@@ -107,20 +108,69 @@ elif opcion == "🌱 Vigor de la Planta":
         st.session_state["plantas"] = []
 
     with st.form("vigor_form"):
-        grosor
+        grosor = st.number_input("🌱 Grosor del tallo (cm)", min_value=1.0, max_value=50.0, value=30.0)
+        altura_tallo = st.number_input("🌿 Altura del tallo (m)", min_value=0.5, max_value=6.0, value=2.5)
+        hojas_sanas = st.number_input("🍃 Número de hojas sanas", min_value=0, max_value=50, value=10)
+        altura_hijo = st.number_input("🌿 Altura del hijo (m)", min_value=0.0, max_value=4.0, value=1.5)
 
+        col1, col2 = st.columns(2)
+        agregar = col1.form_submit_button("➕ Agregar Planta")
+        cancelar = col2.form_submit_button("❌ Cancelar")
 
+        if agregar:
+            st.session_state["plantas"].append({
+                "Grosor": grosor,
+                "AlturaTallo": altura_tallo,
+                "HojasSanas": hojas_sanas,
+                "AlturaHijo": altura_hijo
+            })
+            st.success("🌱 Planta agregada")
 
+        if cancelar:
+            st.session_state["plantas"] = []
+            st.warning("🚫 Lista de plantas reiniciada")
 
+    if st.session_state["plantas"]:
+        if st.button("📊 Analizar Plantas"):
+            resultados = []
+            estados = {"Saludable": 0, "Regular": 0, "Débil": 0, "Crítica": 0}
 
+            for idx, planta in enumerate(st.session_state["plantas"], 1):
+                vigor = (
+                    planta["Grosor"] * 0.4 +
+                    planta["AlturaTallo"] * 10 +
+                    planta["HojasSanas"] * 1 +
+                    planta["AlturaHijo"] * 5
+                )
+                if vigor > 85:
+                    estado = "Saludable"
+                    emoji = "🟢"
+                elif vigor > 65:
+                    estado = "Regular"
+                    emoji = "🟡"
+                elif vigor > 45:
+                    estado = "Débil"
+                    emoji = "🟠"
+                else:
+                    estado = "Crítica"
+                    emoji = "🔴"
 
+                estados[estado] += 1
+                resultados.append([idx, planta["Grosor"], planta["AlturaTallo"], planta["HojasSanas"], planta["AlturaHijo"], f"{emoji} {estado}"])
 
+            df_vigor = pd.DataFrame(resultados, columns=["#", "Grosor", "Altura Tallo", "Hojas Sanas", "Altura Hijo", "Estado"])
+            st.dataframe(df_vigor)
 
+            fig = px.pie(
+                names=list(estados.keys()),
+                values=list(estados.values()),
+                title="Distribución del Vigor de las Plantas",
+                color_discrete_sequence=px.colors.sequential.RdBu
+            )
+            st.plotly_chart(fig)
+            exportar_csv(df_vigor, prefix="vigor_resultado")
 
-
-
-
-
-
-
-
+            st.markdown("---")
+            st.markdown("### 📋 Resumen de diagnóstico")
+            for estado, cantidad in estados.items():
+                st.markdown(f"**{estado}:** {cantidad} plantas")
