@@ -65,3 +65,4 @@ def generar_pdf(df, total=None, ganancia=None, filename="reporte.pdf"):
 
 
 
+
