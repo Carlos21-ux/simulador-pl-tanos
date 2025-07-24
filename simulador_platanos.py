@@ -168,12 +168,22 @@ elif opcion == "🌱 Vigor de la Planta":
             df_vigor = pd.DataFrame(resultados, columns=["#", "Grosor", "Altura Tallo", "Hojas Sanas", "Altura Hijo", "Estado"])
             st.dataframe(df_vigor)
 
-            fig = px.pie(
-                names=list(estados.keys()),
-                values=list(estados.values()),
-                title="Distribución del Vigor de las Plantas",
-                color_discrete_sequence=px.colors.sequential.RdBu
-            )
+            ]# Definir colores personalizados para cada estado
+colores_personalizados = {
+    "Saludable": "green",
+    "Regular": "orange",
+    "Débil": "red",
+    "Crítica": "darkred"
+}
+
+fig = px.pie(
+    names=list(estados.keys()),
+    values=list(estados.values()),
+    title="Distribución del Vigor de las Plantas",
+    color=list(estados.keys()),
+    color_discrete_map=colores_personalizados
+)
+
             st.plotly_chart(fig)
             exportar_csv(df_vigor, prefix="vigor_resultado")
 
