@@ -98,6 +98,17 @@ elif opcion == "🎲 Montecarlo":
         df["💰 Ganancia"] = df["🍌 Estimación"] * precio
         exportar_csv(df, prefix="montecarlo_resultado")
 
+# ---------- VIGOR DE LA PLANTA ----------
+elif opcion == "🌱 Vigor de la Planta":
+    st.subheader("🌱 Evaluación del Vigor de la Planta")
+    st.info("Aquí podrás ingresar las características de cada planta y analizar su vigor y salud.")
+
+    if "plantas" not in st.session_state:
+        st.session_state["plantas"] = []
+
+    with st.form("vigor_form"):
+        grosor
+
 
 
 
