@@ -6,6 +6,7 @@ import plotly.express as px
 from PIL import Image
 from io import BytesIO
 import base64
+from datetime import datetime
 
 # Imagen principal
 image = Image.open("platano1.png")
@@ -25,9 +26,11 @@ def calcular(pb, pm, pa, altura):
 
 # Exportar DataFrame a CSV descargable corregido (UTF-8 BOM + separador ;) para Excel
 
-def exportar_csv(df, filename="reporte.csv"):
+def exportar_csv(df, prefix="reporte"):
     output = BytesIO()
     try:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{prefix}_{timestamp}.csv"
         df.to_csv(output, index=False, sep=';', encoding='utf-8-sig')
         output.seek(0)
         b64 = base64.b64encode(output.read()).decode()
@@ -35,6 +38,7 @@ def exportar_csv(df, filename="reporte.csv"):
         st.markdown(href, unsafe_allow_html=True)
     except Exception as e:
         st.error(f"❌ Error al exportar el archivo: {e}")
+
 
 
 
