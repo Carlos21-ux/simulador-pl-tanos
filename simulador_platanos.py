@@ -23,16 +23,11 @@ def calcular(pb, pm, pa, altura):
     resultado = (pb * 0.25 + pm * 0.2 + pa * 0.15 + altura * 10) - 10
     return round(min(max(resultado, 30), 60))
 
-# Exportar DataFrame a Excel descargable
+# Exportar DataFrame a Excel descargable con openpyxl
 def exportar_excel(df, filename="reporte.xlsx"):
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Resultados')
-        workbook = writer.book
-        worksheet = writer.sheets['Resultados']
-        for i, col in enumerate(df.columns):
-            column_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
-            worksheet.set_column(i, i, column_len)
     output.seek(0)
     b64 = base64.b64encode(output.read()).decode()
     href = f'<a href="data:application/octet-stream;base64,{b64}" download="{filename}">📥 Descargar Excel</a>'
@@ -67,6 +62,7 @@ if opcion == "🔢 Manual":
         st.success(f"🔢 Total plátanos: {total_platanos}")
         st.info(f"💰 Ganancia estimada: S/ {total_ganancia}")
         exportar_excel(df_manual, filename="manual_resultado.xlsx")
+
 
 
 
