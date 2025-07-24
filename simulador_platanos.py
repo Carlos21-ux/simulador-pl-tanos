@@ -40,64 +40,7 @@ def exportar_csv(df, prefix="reporte"):
         st.error(f"❌ Error al exportar el archivo: {e}")
 
 # Mostrar contenido según la opción seleccionada
-if opcion == "🔢 Manual":
-    st.subheader("Ingreso Manual de Planta")
-    if "plantas_manual" not in st.session_state:
-        st.session_state["plantas_manual"] = []
-
-    pb = st.number_input("📏 Perímetro de la base (cm):", min_value=30.0, max_value=50.0, value=40.0)
-    pm = st.number_input("📏 Perímetro medio (cm):", min_value=25.0, max_value=50.0, value=35.0)
-    pa = st.number_input("📏 Perímetro alto (cm):", min_value=15.0, max_value=50.0, value=25.0)
-    altura = st.number_input("📏 Altura total del tronco (m):", min_value=2.0, max_value=6.0, value=3.0)
-    precio = st.number_input("💰 Precio por plátano (S/):", min_value=0.0, value=0.2)
-
-    if st.button("➕ Agregar Planta"):
-        estimado = calcular(pb, pm, pa, altura)
-        ganancia = round(estimado * precio, 2)
-        st.session_state["plantas_manual"].append([pb, pm, pa, altura, estimado, ganancia])
-        st.success("🌿 Planta agregada correctamente")
-
-    if st.session_state["plantas_manual"]:
-        df_manual = pd.DataFrame(
-            st.session_state["plantas_manual"],
-            columns=["PB", "PM", "PA", "Altura", "🍌 Estimado", "💰 Ganancia"]
-        )
-        st.dataframe(df_manual)
-        total_platanos = df_manual["🍌 Estimado"].sum()
-        total_ganancia = df_manual["💰 Ganancia"].sum()
-        st.success(f"🔢 Total plátanos: {total_platanos}")
-        st.info(f"💰 Ganancia estimada: S/ {total_ganancia}")
-        exportar_csv(df_manual, prefix="manual_resultado")
-
-elif opcion == "🎲 Montecarlo":
-    st.subheader("🎲 Simulación por Montecarlo")
-    n = st.number_input("🌱 Número de plantas a simular:", min_value=1, value=10)
-    precio = st.number_input("💰 Precio por plátano (S/):", min_value=0.0, value=0.2)
-
-    if st.button("▶️ Ejecutar Simulación"):
-        data = []
-        total_platanos = 0
-
-        for _ in range(n):
-            pb = round(random.uniform(30, 50), 2)
-            pm = round(random.uniform(25, 50), 2)
-            pa = round(random.uniform(15, 50), 2)
-            altura = round(random.uniform(2.0, 6.0), 2)
-            estimado = calcular(pb, pm, pa, altura)
-            total_platanos += estimado
-            data.append([pb, pm, pa, altura, estimado])
-
-        df = pd.DataFrame(data, columns=["PB", "PM", "PA", "Altura", "🍌 Estimación"])
-        st.dataframe(df)
-
-        ganancia = round(total_platanos * precio, 2)
-        st.success(f"🔢 Total de plátanos estimados: {total_platanos}")
-        st.info(f"💰 Ganancia estimada: S/ {ganancia}")
-
-        df["💰 Ganancia"] = df["🍌 Estimación"] * precio
-        exportar_csv(df, prefix="montecarlo_resultado")
-
-elif opcion == "🌱 Vigor de la Planta":
+if opcion == "🌱 Vigor de la Planta":
     st.subheader("🌱 Evaluación del Vigor de la Planta")
     st.info("Aquí podrás ingresar las características de cada planta y analizar su vigor y salud.")
 
@@ -107,7 +50,7 @@ elif opcion == "🌱 Vigor de la Planta":
     with st.form("vigor_form"):
         grosor = st.number_input("🌱 Grosor del tallo (cm)", min_value=1.0, max_value=50.0, value=30.0)
         altura_tallo = st.number_input("🌿 Altura del tallo (m)", min_value=0.5, max_value=6.0, value=2.5)
-        hojas_sanas = st.number_input("🍃 Número de hojas sanas", min_value=0, max_value=30, value=10)
+        hojas_sanas = st.number_input("🍃 Número de hojas sanas", min_value=0, max_value=50, value=10)
         altura_hijo = st.number_input("🌿 Altura del hijo (m)", min_value=0.0, max_value=4.0, value=1.5)
 
         col1, col2 = st.columns(2)
@@ -134,22 +77,26 @@ elif opcion == "🌱 Vigor de la Planta":
 
             for idx, planta in enumerate(st.session_state["plantas"], 1):
                 vigor = (
-                    planta["Grosor"] * 0.3 +
+                    planta["Grosor"] * 0.4 +
                     planta["AlturaTallo"] * 10 +
                     planta["HojasSanas"] * 1 +
                     planta["AlturaHijo"] * 5
                 )
-                if vigor > 100:
+                if vigor > 85:
                     estado = "Saludable"
-                elif vigor > 75:
+                    emoji = "🟢"
+                elif vigor > 65:
                     estado = "Regular"
-                elif vigor > 50:
+                    emoji = "🟡"
+                elif vigor > 45:
                     estado = "Débil"
+                    emoji = "🟠"
                 else:
                     estado = "Crítica"
+                    emoji = "🔴"
 
                 estados[estado] += 1
-                resultados.append([idx, planta["Grosor"], planta["AlturaTallo"], planta["HojasSanas"], planta["AlturaHijo"], estado])
+                resultados.append([idx, planta["Grosor"], planta["AlturaTallo"], planta["HojasSanas"], planta["AlturaHijo"], f"{emoji} {estado}"])
 
             df_vigor = pd.DataFrame(resultados, columns=["#", "Grosor", "Altura Tallo", "Hojas Sanas", "Altura Hijo", "Estado"])
             st.dataframe(df_vigor)
@@ -162,6 +109,13 @@ elif opcion == "🌱 Vigor de la Planta":
             )
             st.plotly_chart(fig)
             exportar_csv(df_vigor, prefix="vigor_resultado")
+
+            st.markdown("---")
+            st.markdown("### 📋 Resumen de diagnóstico")
+            for estado, cantidad in estados.items():
+                st.markdown(f"**{estado}:** {cantidad} plantas")
+
+
 
 
 
