@@ -30,9 +30,7 @@ def limpiar_texto(texto):
         str(texto)
         .replace("á", "a").replace("é", "e").replace("í", "i")
         .replace("ó", "o").replace("ú", "u").replace("ñ", "n")
-        .replace("🌿", "").replace("🍌", "").replace("💰", "")
-        .replace("⚠️", "").replace("▶️", "").replace("➕", "")
-        .replace("📊", "").replace("📏", "").replace("✅", "")
+        .encode('latin-1', 'ignore').decode('latin-1')
     )
 
 # Generar PDF limpio
